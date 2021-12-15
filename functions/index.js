@@ -1,3 +1,4 @@
+// index.js
 "use strict";
 
 const functions = require("firebase-functions");
@@ -11,8 +12,8 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const core = provideCore({
-  apiKey: process.env.ANSWERS_API_KEY,
-  experienceKey: "seaglass-chat",
+  apiKey: process.env.ANSWERS_API_KEY, // Replace with your Answers API Key
+  experienceKey: "seaglass-chat", // Replace with your Answers Experience Key
   locale: "en",
   experienceVersion: "PRODUCTION",
   // Sandbox endpoints need to be specified when using sandbox account
@@ -55,13 +56,14 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest(
     core
       .universalSearch({ query })
       .then((results) => {
+        // extract the vertical key from the response
         const verticalKey =
           results && results.verticalResults[0]
             ? results.verticalResults[0].verticalKey
             : "";
 
         if (results.directAnswer) {
-          // If there is a Direct Answer, we will highlight value of the answer and also return the snippet it came from
+          // If there is a Direct Answer, we will highlight the value of the answer and also return the snippet it came from
           answer = () => {
             const payloadData = {
               richContent: [
@@ -113,6 +115,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest(
           };
         } else if (verticalKey === "products") {
           if (results.verticalResults[0].results) {
+            // if results are returned, loop through and format the top 3 products for showing in the chat
             const richContent = results.verticalResults[0].results
               .slice(0, 3)
               .map((product) => [
@@ -134,6 +137,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest(
               new Payload("PLATFORM_UNSPECIFIED", { richContent }, options)
             );
           } else {
+            // if the vertical was identified as being a product but no products matched the query, return a default message
             answer = () => agent.add(noGlasses);
           }
         } else {
